@@ -20,14 +20,13 @@ import java.util.List;
 import java.util.UUID;
 
 @Entity
-@Table(name="user")
+@Table(name="person")
 @NoArgsConstructor
 @AllArgsConstructor
 @Getter
 @Setter
 
-
-public class User {
+public class Person {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
@@ -51,15 +50,14 @@ public class User {
     private Role role;
 
     // User 1:N Invoice
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "person", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     @JsonManagedReference
     private List<Invoice> invoices = new ArrayList<>();
 
     // User 1:N Client
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "person", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     @JsonManagedReference
     private List<Client> clients = new ArrayList<>();
-
 
     // Audition
     @CreationTimestamp

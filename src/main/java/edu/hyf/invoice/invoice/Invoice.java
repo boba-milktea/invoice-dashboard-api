@@ -1,8 +1,9 @@
 package edu.hyf.invoice.invoice;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import edu.hyf.invoice.client.Client;
-import edu.hyf.invoice.user.User;
+import edu.hyf.invoice.user.Person;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
@@ -26,7 +27,6 @@ import java.util.List;
 @Setter
 
 public class Invoice {
-
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "invoiceSeqGen")
@@ -68,12 +68,14 @@ public class Invoice {
 
     //User 1:N Invoice
     @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name="user_id")
-    private User user;
+    @JoinColumn(name="person_id")
+    @JsonBackReference
+    private Person person;
 
     //Client 1:N Invoice
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name="client_id")
+    @JsonBackReference
     private Client client;
 
     // Invoice 1:N InvoiceItem

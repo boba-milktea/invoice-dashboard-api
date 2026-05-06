@@ -1,8 +1,9 @@
 package edu.hyf.invoice.client;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import edu.hyf.invoice.invoice.Invoice;
-import edu.hyf.invoice.user.User;
+import edu.hyf.invoice.user.Person;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
@@ -59,8 +60,9 @@ public class Client {
 
     // User 1:N Client
     @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "user_id")
-    private User user;
+    @JoinColumn(name = "person_id")
+    @JsonBackReference
+    private Person person;
 
     // Audition
     @CreationTimestamp

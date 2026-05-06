@@ -1,5 +1,6 @@
 package edu.hyf.invoice.invoice;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.DecimalMin;
@@ -46,6 +47,7 @@ public class InvoiceItem {
     // Invoice 1:N InvoiceItem
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name="invoice_id")
+    @JsonBackReference
     private Invoice invoice;
 
     // Audition
