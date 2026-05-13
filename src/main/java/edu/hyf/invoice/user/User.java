@@ -6,6 +6,7 @@ import edu.hyf.invoice.invoice.Invoice;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -20,13 +21,13 @@ import java.util.List;
 import java.util.UUID;
 
 @Entity
-@Table(name="person")
+@Table(name="users")
 @NoArgsConstructor
 @AllArgsConstructor
 @Getter
 @Setter
 
-public class Person {
+public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
@@ -42,20 +43,21 @@ public class Person {
 
     @NotBlank(message = "Password is required.")
     @Size(min = 8, message = "Password must be at least 8 characters.")
+    @Column(nullable = false, length = 255)
     private String password;
 
-    @NotBlank
+    @NotNull(message = "Role is required.")
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
     private Role role;
 
     // User 1:N Invoice
-    @OneToMany(mappedBy = "person", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     @JsonManagedReference
     private List<Invoice> invoices = new ArrayList<>();
 
     // User 1:N Client
-    @OneToMany(mappedBy = "person", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     @JsonManagedReference
     private List<Client> clients = new ArrayList<>();
 
