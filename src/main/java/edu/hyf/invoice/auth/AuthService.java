@@ -20,7 +20,6 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
 
-    // TODO should return a DTO
     @Transactional
     public AuthResponseDTO login (LoginRequestDTO loginRequestDTO) {
 

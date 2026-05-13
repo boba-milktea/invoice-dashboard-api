@@ -8,6 +8,7 @@ import edu.hyf.invoice.common.exception.EmailAlreadyExistsException;
 import edu.hyf.invoice.common.exception.UserNotFoundByIdException;
 import edu.hyf.invoice.user.User;
 import edu.hyf.invoice.user.UserRepository;
+import jakarta.persistence.Table;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -62,10 +63,9 @@ public class ClientService {
 
     @Transactional
     public void deleteClient(UUID id) {
-        if (!clientRepository.existsById(id)){
-            throw new ClientNotFoundException(id);
-        }
-        clientRepository.deleteById(id);
+        Client client = clientRepository.findClientById(id).orElseThrow(()
+                -> new ClientNotFoundException(id));
+        clientRepository.delete(client);
     }
 
     @Transactional
@@ -78,4 +78,5 @@ public class ClientService {
         Client savedClient = clientRepository.save(client);
         return clientMapper.toResponseDTO(savedClient);
     }
+
 }

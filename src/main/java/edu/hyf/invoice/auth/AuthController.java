@@ -4,6 +4,8 @@ import edu.hyf.invoice.auth.dto.AuthResponseDTO;
 import edu.hyf.invoice.auth.dto.LoginRequestDTO;
 import edu.hyf.invoice.auth.dto.RegisterRequestDTO;
 import edu.hyf.invoice.user.UserService;
+import edu.hyf.invoice.user.dto.UserResponse;
+import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -19,23 +21,21 @@ import org.springframework.web.bind.annotation.*;
 
 @Validated
 
-//TODO add @operation
-
 public class AuthController {
 
     private final AuthService authService;
     private final UserService userService;
 
     @PostMapping("/register")
-    public ResponseEntity<@NonNull Void> register(@Valid @RequestBody RegisterRequestDTO registerRequestDTO) {
-        userService.register(registerRequestDTO);
-        return ResponseEntity.status(HttpStatus.CREATED).build();
+    @Operation(summary = "Register a new user.")
+    public ResponseEntity<@NonNull UserResponse> register(@Valid @RequestBody RegisterRequestDTO registerRequestDTO) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(userService.register(registerRequestDTO));
     }
 
     @PostMapping("/login")
+    @Operation(summary = "Login a user")
     public ResponseEntity<@NonNull AuthResponseDTO> login(@Valid @RequestBody LoginRequestDTO loginRequestDTO) {
         return ResponseEntity.ok(authService.login(loginRequestDTO));
-
     }
 /*
     @PostMapping("/token")
