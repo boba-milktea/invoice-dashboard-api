@@ -26,10 +26,8 @@ import java.util.List;
 @Getter
 @Setter
 
-/*
-To do:
-- add Validation for dates
- */
+// TODO validation for dates
+
 
 public class Invoice {
 
