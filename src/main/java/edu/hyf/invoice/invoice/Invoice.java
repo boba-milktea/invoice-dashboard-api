@@ -3,7 +3,7 @@ package edu.hyf.invoice.invoice;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import edu.hyf.invoice.client.Client;
-import edu.hyf.invoice.user.Person;
+import edu.hyf.invoice.user.User;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
@@ -26,6 +26,11 @@ import java.util.List;
 @Getter
 @Setter
 
+/*
+To do:
+- add Validation for dates
+ */
+
 public class Invoice {
 
     @Id
@@ -35,8 +40,8 @@ public class Invoice {
 
     @NotBlank(message = "Invoice Reference can't be blank")
     @Column(name="invoice_ref", nullable = false, unique = true)
-    @Size(min = 15)
-    private String invoiceReference;
+    @Size(min = 8, message = "Reference should be more than 8 characters.")
+    private String reference;
 
     @NotBlank
     @Column(name="issue_date", nullable = false)
@@ -70,7 +75,7 @@ public class Invoice {
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name="person_id")
     @JsonBackReference
-    private Person person;
+    private User user;
 
     //Client 1:N Invoice
     @ManyToOne(fetch = FetchType.EAGER)

@@ -3,10 +3,7 @@ package edu.hyf.invoice.invoice;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
-import jakarta.validation.constraints.DecimalMin;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Size;
+import jakarta.validation.constraints.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
@@ -26,12 +23,13 @@ public class InvoiceItem {
     private Long id;
 
     @NotBlank
-    @Size(min=10, message = "Description should be more than 10 characters.")
+    @Size(min=10, max=255)
     @Column(nullable = false)
     private String description;
 
     @NotNull
     @Column(nullable = false)
+    @Positive
     private Integer quantity;
 
     @NotNull
@@ -58,4 +56,5 @@ public class InvoiceItem {
     @UpdateTimestamp
     @Column(nullable = false)
     private LocalDateTime updatedAt;
+
 }
