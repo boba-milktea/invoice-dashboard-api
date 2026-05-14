@@ -5,7 +5,6 @@ import edu.hyf.invoice.security.JwtAuthFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -23,7 +22,6 @@ public class SecurityConfig {
     private final JwtAuthFilter jwtAuthFilter;
     private final LoggingFilter loggingFilter;
 
-    // Encoder
     @Bean
     public PasswordEncoder bCryptPasswordEncoder() {
         return new BCryptPasswordEncoder();
@@ -39,11 +37,18 @@ public class SecurityConfig {
         http.csrf(csrf -> csrf.disable())
                 .sessionManagement(s -> s.sessionCreationPolicy((SessionCreationPolicy.STATELESS))) // disable session
                 .authorizeHttpRequests(auth -> auth
-                                .requestMatchers("/api/v1/**").permitAll()
-               //         .requestMatchers("/api/v1/auth/**").permitAll()
-              //          .requestMatchers(HttpMethod.GET, "/api/v1/invoice/**").permitAll()
-              //          .requestMatchers("/swagger-ui/**").hasRole("ADMIN")
-              //          .requestMatchers("/api/vi/invoice/**").hasRole("ADMIN")
+                        .requestMatchers(
+                                "/api/v1/auth/**",
+                                "/swagger-ui.html",
+                                "/swagger-ui/**",
+                                "/v3/api-docs/**"
+                        ).permitAll()
+
+                        .requestMatchers(
+                                "/api/v1/clients/**",
+                                "/api/v1/invoices/**"
+                        ).hasRole("ADMIN")
+
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)

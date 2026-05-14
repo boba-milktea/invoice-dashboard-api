@@ -35,14 +35,14 @@ public class ClientService {
     }
 
     public List<ClientResponse> findClientsByUsername(String name) {
-        return clientRepository.findClientsByUsername(name)
+        return clientRepository.findByUsername(name)
                 .stream()
                 .map(clientMapper::toResponseDTO)
                 .toList();
     }
 
     public ClientResponse findClientById(UUID id) {
-        return clientMapper.toResponseDTO(clientRepository.findClientById(id).orElseThrow(()
+        return clientMapper.toResponseDTO(clientRepository.findById(id).orElseThrow(()
                 -> new ClientNotFoundException(id)) );
     }
 
@@ -63,14 +63,14 @@ public class ClientService {
 
     @Transactional
     public void deleteClient(UUID id) {
-        Client client = clientRepository.findClientById(id).orElseThrow(()
+        Client client = clientRepository.findById(id).orElseThrow(()
                 -> new ClientNotFoundException(id));
         clientRepository.delete(client);
     }
 
     @Transactional
     public ClientResponse updateClientById(UUID id, ClientPatchRequest dto) {
-       Client client = clientRepository.findClientById(id).orElseThrow(()
+       Client client = clientRepository.findById(id).orElseThrow(()
                -> new ClientNotFoundException(id));
 
         clientMapper.updatePatching(dto, client);

@@ -21,8 +21,10 @@ public interface ClientRepository extends JpaRepository<@NonNull Client, @NonNul
             where upper(u.name) like upper(concat ('%', :name, '%'))
             """)
 
-    List<Client> findClientsByUsername(@Param("name") String name);
+    List<Client> findByUsername(@Param("name") String name);
     Optional<Client> findClientById(UUID id);
+
+    Optional<Client> findByIdAndUser_Id(UUID id, UUID userId);
 
     boolean existsByEmail(String email);
 }
