@@ -71,9 +71,19 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.CONFLICT).body(Map.of("error", ex.getMessage()));
     }
 
+    @ExceptionHandler(InvoiceAlreadyExistsException.class)
+    public ResponseEntity<?>  handleInvoiceAlreadyExists (InvoiceAlreadyExistsException ex) {
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(Map.of("error", ex.getMessage()));
+    }
+
     @ExceptionHandler(InvoiceNotFoundException.class)
-    public ResponseEntity<?> handleInvoiceNotFound (InvoiceNotFoundException ex) {
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("error", ex.getMessage()));
+    public ResponseEntity<?> handleInvoiceNotFound(InvoiceNotFoundException ex) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("error", ex.getMessage()));
+    }
+
+    @ExceptionHandler(InvoiceItemNotFoundException.class)
+    public ResponseEntity<?> handleInvoiceItemNotFound(InvoiceItemNotFoundException ex) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("error", ex.getMessage()));
     }
 
     @ExceptionHandler(ClientNotFoundException.class)

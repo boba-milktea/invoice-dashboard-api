@@ -11,10 +11,10 @@ public class LoginRequestDTO {
 
     @NotBlank(message = "Email is required.")
     @Email(message = "Email format is invalid.")
-    public String email;
+    private String email;
 
     @NotBlank(message = "Password is required.")
     @Size(min = 8, message = "Password must be at least 8 characters.")
-    public String password;
+    private String password;
 
 }

@@ -9,7 +9,7 @@ import tools.jackson.databind.exc.IgnoredPropertyException;
 import java.lang.annotation.Target;
 
 
-@Mapper(componentModel = "spring")
+@Mapper(componentModel = MappingConstants.ComponentModel.SPRING)
 
 public interface ClientMapper {
 
@@ -24,6 +24,11 @@ public interface ClientMapper {
     Client toEntity(ClientRequest dto);
 
     @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE )
+    @Mapping(target = "id", ignore = true)
+    @Mapping(target = "user", ignore = true)
+    @Mapping(target = "invoices", ignore = true)
+    @Mapping(target = "createdAt", ignore = true)
+    @Mapping(target = "updatedAt", ignore = true)
     void updatePatching(ClientPatchRequest dto, @MappingTarget Client client);
 
 }

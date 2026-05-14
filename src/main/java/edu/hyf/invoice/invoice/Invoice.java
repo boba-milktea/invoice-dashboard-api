@@ -20,14 +20,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Entity
-@Table(name="invoice")
+@Table(name = "invoice", uniqueConstraints = {
+        @UniqueConstraint(name = "uk_invoice_user_ref", columnNames = {"user_id", "invoice_ref"})
+})
 @NoArgsConstructor
 @AllArgsConstructor
 @Getter
 @Setter
-
-// TODO validation for dates
-
 
 public class Invoice {
 
@@ -37,41 +36,41 @@ public class Invoice {
     private Long id;
 
     @NotBlank(message = "Invoice Reference can't be blank")
-    @Column(name="invoice_ref", nullable = false, unique = true)
-    @Size(min = 8, message = "Reference should be more than 8 characters.")
+    @Column(name = "invoice_ref", nullable = false)
+    @Size(min = 3, max = 100, message = "Reference length must be between 3 and 100 characters.")
     private String reference;
 
-    @NotBlank
-    @Column(name="issue_date", nullable = false)
+    @NotNull
+    @Column(name = "issue_date", nullable = false)
     private LocalDate issueDate;
 
-    @NotBlank
-    @Column(name="due_date", nullable = false)
+    @NotNull
+    @Column(name = "due_date", nullable = false)
     private LocalDate dueDate;
 
-    @NotBlank
+    @NotNull
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
     private Status status;
 
     @NotNull
-    @DecimalMin(value = "0.0", inclusive = false)
+    @DecimalMin(value = "0.0", inclusive = true)
     @Column(nullable = false, precision = 10, scale = 2)
     private BigDecimal subtotal;
 
     @NotNull
-    @DecimalMin(value = "0.0")
+    @DecimalMin(value = "0.0", inclusive = true)
     @Column(nullable = false, precision = 10, scale = 2)
     private BigDecimal taxAmount;
 
     @NotNull
-    @DecimalMin(value = "0.0", inclusive = false)
+    @DecimalMin(value = "0.0", inclusive = true)
     @Column(nullable = false, precision = 10, scale = 2)
     private BigDecimal totalAmount;
 
     //User 1:N Invoice
     @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name="person_id")
+    @JoinColumn(name="user_id")
     @JsonBackReference
     private User user;
 

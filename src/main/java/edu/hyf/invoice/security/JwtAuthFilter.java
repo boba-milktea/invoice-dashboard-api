@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import org.jspecify.annotations.NullMarked;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
@@ -25,7 +26,11 @@ public class JwtAuthFilter extends OncePerRequestFilter {
     private final JwtService jwtService;
 
     @Override
-    @NullMarked
+    protected boolean shouldNotFilter(HttpServletRequest request) {
+        return request.getServletPath().startsWith("/api/v1/auth");
+    }
+
+    @Override
     protected void doFilterInternal(
             HttpServletRequest request,
             HttpServletResponse response,
@@ -39,32 +44,34 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             return;
         }
 
-        // Extract token
-        String token = authHeader.substring(7);
-        // Get Email
-        String email = jwtService.extractUserName(token);
+        try {
+            // Extract token
+            String token = authHeader.substring(7);
+            // Get Email
+            String email = jwtService.extractUserName(token);
 
-        if (email != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-           //Load Yser
-            UserDetails userDetails = userDetailsService.loadUserByUsername(email);
+            if (email != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+                //Load User
+                UserDetails userDetails = userDetailsService.loadUserByUsername(email);
 
-            // Validate Token
-            if(jwtService.isTokenValid(token, userDetails)) {
-                UsernamePasswordAuthenticationToken authToken =
-                        new UsernamePasswordAuthenticationToken(
-                                userDetails,
-                                null,
-                                userDetails.getAuthorities());
-                authToken.setDetails(
-                        new WebAuthenticationDetailsSource().buildDetails(request)
-                );
-            // Set authentication in Spring Security Context
-                SecurityContextHolder.getContext().setAuthentication(authToken);
+                // Validate Token
+                if (jwtService.isTokenValid(token, userDetails)) {
+                    UsernamePasswordAuthenticationToken authToken =
+                            new UsernamePasswordAuthenticationToken(
+                                    userDetails,
+                                    null,
+                                    userDetails.getAuthorities());
+                    authToken.setDetails(
+                            new WebAuthenticationDetailsSource().buildDetails(request)
+                    );
+                    // Set authentication in Spring Security Context
+                    SecurityContextHolder.getContext().setAuthentication(authToken);
+                }
             }
-
-            // Continues the request
-            filterChain.doFilter(request, response);
-
+        } catch (Exception ex) {
+            SecurityContextHolder.clearContext();
         }
+        // Continues the request
+        filterChain.doFilter(request, response);
     }
 }

@@ -25,7 +25,7 @@ public class ClientController {
     private final ClientService clientService;
 
    @GetMapping
-   @Operation(summary = "Get all the clients")
+   @Operation(summary = "Get all clients for the authenticated user")
    public ResponseEntity<@NonNull List<ClientResponse>> getAllClients() {
        return ResponseEntity.ok(clientService.findAllClients());
    }
