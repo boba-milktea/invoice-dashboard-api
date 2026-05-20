@@ -5,6 +5,7 @@ import edu.hyf.invoice.invoice.dto.InvoiceRequest;
 import edu.hyf.invoice.invoice.dto.InvoiceResponse;
 import org.mapstruct.*;
 
+
 @Mapper(componentModel = MappingConstants.ComponentModel.SPRING, uses = InvoiceItemMapper.class)
 
 public interface InvoiceMapper {
@@ -19,6 +20,9 @@ public interface InvoiceMapper {
     @Mapping(target="client", ignore = true)
     @Mapping(target="createdAt", ignore = true)
     @Mapping(target="updatedAt", ignore = true)
+    @Mapping(target="subtotal", ignore = true)
+    @Mapping(target="taxAmount", ignore = true)
+    @Mapping(target="totalAmount", ignore = true)
     Invoice toEntity(InvoiceRequest dto);
 
     @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)

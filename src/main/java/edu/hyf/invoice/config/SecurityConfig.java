@@ -20,7 +20,13 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 public class SecurityConfig {
 
     private final JwtAuthFilter jwtAuthFilter;
-    private final LoggingFilter loggingFilter;
+
+    @Bean
+    LoggingFilter loggingFilter () {
+        return new LoggingFilter();
+    }
+
+
 
     @Bean
     public PasswordEncoder bCryptPasswordEncoder() {
@@ -39,9 +45,9 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
                                 "/api/v1/auth/**",
-                                "/swagger-ui.html",
                                 "/swagger-ui/**",
-                                "/v3/api-docs/**"
+                                "/v3/api-docs/**",
+                                "/error"
                         ).permitAll()
 
                         .requestMatchers(
@@ -52,7 +58,7 @@ public class SecurityConfig {
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
-                .addFilterBefore(loggingFilter, JwtAuthFilter.class);
+                .addFilterBefore(new LoggingFilter(), JwtAuthFilter.class);
         return http.build();
     }
 

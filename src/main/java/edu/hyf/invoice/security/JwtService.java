@@ -42,7 +42,7 @@ public class JwtService {
                 .claims(Map.of("UserId", user.getId(), // add additional information (id, role) to the token
                         "role", user.getRole().name()))
                 .issuedAt(Date.from(now)) // add the issue date
-                .expiration(Date.from(now.plusMillis(expirationMs))) // add the expiration date
+                .expiration(Date.from(now.plusMillis(expirationMs))) // add the expiratio
                 .signWith(key) // sign-in with the secret key
                 .compact(); // convert everything to final jwt token
     }

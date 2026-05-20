@@ -9,6 +9,7 @@ import edu.hyf.invoice.security.UserPrincipal;
 import jakarta.validation.Valid;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -27,6 +28,9 @@ import java.util.List;
 @RequiredArgsConstructor
 @Validated
 
+
+// TODO solve Serializing PageImpl, use Spring Data's PagedModel
+
 public class InvoiceController {
 
     private final InvoiceService invoiceService;
@@ -35,6 +39,7 @@ public class InvoiceController {
     @GetMapping
     public ResponseEntity<@NonNull Page<@NonNull InvoiceResponse>> getMyInvoices(
             @AuthenticationPrincipal UserPrincipal userPrincipal,
+            @ParameterObject
             @PageableDefault(
                     size = 10,
                     sort = "createdAt",
