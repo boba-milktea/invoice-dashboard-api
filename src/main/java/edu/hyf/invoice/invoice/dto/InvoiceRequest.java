@@ -7,6 +7,10 @@ import jakarta.validation.constraints.Size;
 import java.time.LocalDate;
 import java.util.UUID;
 
+// TODO dates validation - createdAt and updatedAt dates should be reasonable
+// TODO reference to be varified with pattern
+
+
 public record InvoiceRequest (@NotBlank(message = "Invoice reference is required.")
                               @Size(min = 3, max = 100)
                               String reference,

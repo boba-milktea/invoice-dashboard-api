@@ -41,7 +41,6 @@
 	<properties>
 		<java.version>21</java.version>
         <mapstruct.version>1.5.5.Final</mapstruct.version>
-        <swagger.version>2.5.0</swagger.version>
         <jwt.version>0.12.6</jwt.version>
         <jwt.impl.version>0.12.6</jwt.impl.version>
         <jwt.jackson.vesion>0.12.6</jwt.jackson.vesion>
@@ -124,7 +123,7 @@
         <dependency>
             <groupId>org.springdoc</groupId>
             <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
-            <version>${swagger.version}</version>
+            <version>3.0.1</version>
         </dependency>
 
         <!-- JWT -->

@@ -7,6 +7,7 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 
+// TODO still need to get the clientName
 
 public record InvoiceResponse(
         String reference,
