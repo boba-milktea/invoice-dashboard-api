@@ -8,8 +8,10 @@ import edu.hyf.invoice.common.exception.EmailAlreadyExistsException;
 import edu.hyf.invoice.common.exception.UserNotFoundByIdException;
 import edu.hyf.invoice.user.User;
 import edu.hyf.invoice.user.UserRepository;
-import jakarta.persistence.Table;
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -27,56 +29,68 @@ public class ClientService {
     private final ClientMapper clientMapper;
 
 
-    public List<ClientResponse> findAllClients() {
-        return clientRepository.findAll()
+    public Page<@NonNull ClientResponse> findAllClients(UUID userId, Pageable pageable) {
+        return clientRepository.findByUserId(userId, pageable)
+                .map(clientMapper::toResponseDTO);
+    }
+
+    public List<ClientResponse> findClientsByName(String name, UUID userId) {
+        return clientRepository.findByNameAndUserId(name, userId)
                 .stream()
                 .map(clientMapper::toResponseDTO)
                 .toList();
     }
 
-    public List<ClientResponse> findClientsByUsername(String name) {
-        return clientRepository.findByUsername(name)
-                .stream()
-                .map(clientMapper::toResponseDTO)
-                .toList();
-    }
+    public ClientResponse findClientById(UUID id, UUID userId) {
 
-    public ClientResponse findClientById(UUID id) {
-        return clientMapper.toResponseDTO(clientRepository.findById(id).orElseThrow(()
-                -> new ClientNotFoundException(id)) );
+        Client client = clientRepository.findByIdAndUserId(id, userId)
+                .orElseThrow(() -> new ClientNotFoundException(id));
+
+        return clientMapper.toResponseDTO(client);
     }
 
     @Transactional
-    public ClientResponse saveClient (ClientRequest dto) {
+    public ClientResponse saveClient (ClientRequest dto, UUID userId) {
+
         String email = dto.getEmail();
+
         if (clientRepository.existsByEmail(email)){
             throw new EmailAlreadyExistsException(email);
         }
 
-        User user = userRepository.findById(dto.getUserId()).orElseThrow(()
-                -> new UserNotFoundByIdException(dto.getUserId()));
+        User user = userRepository.findById(userId).orElseThrow(()
+                -> new UserNotFoundByIdException(userId));
+
         Client client = clientMapper.toEntity(dto);
+
         client.setUser(user);
+
         Client savedClient = clientRepository.save(client);
+
         return clientMapper.toResponseDTO(savedClient);
     }
 
     @Transactional
-    public void deleteClient(UUID id) {
-        Client client = clientRepository.findById(id).orElseThrow(()
-                -> new ClientNotFoundException(id));
-        clientRepository.delete(client);
-    }
+    public ClientResponse updateClientById(UUID id, ClientPatchRequest dto, UUID userId) {
 
-    @Transactional
-    public ClientResponse updateClientById(UUID id, ClientPatchRequest dto) {
-       Client client = clientRepository.findById(id).orElseThrow(()
-               -> new ClientNotFoundException(id));
+        Client client = clientRepository.findByIdAndUserId(id, userId)
+                .orElseThrow(() -> new ClientNotFoundException(id));
 
         clientMapper.updatePatching(dto, client);
 
         Client savedClient = clientRepository.save(client);
+
         return clientMapper.toResponseDTO(savedClient);
     }
+
+    @Transactional
+    public void deleteClient(UUID id, UUID userId) {
+
+        Client client = clientRepository.findByIdAndUserId(id, userId)
+                .orElseThrow(() -> new ClientNotFoundException(id));
+
+        clientRepository.delete(client);
+    }
+
 
 }

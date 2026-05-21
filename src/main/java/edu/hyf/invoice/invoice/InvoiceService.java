@@ -70,14 +70,19 @@ public class InvoiceService {
 
     @Transactional
     public InvoiceResponse saveInvoice(UUID userId, InvoiceRequest dto) {
+
         if (invoiceRepository.existsByReferenceAndUserId(dto.reference(), userId)) {
             throw new InvoiceAlreadyExistsException(dto.reference());
         }
+
         if (dto.dueDate().isBefore(dto.issueDate())) {
             throw new IllegalArgumentException("Due date must be on or after issue date.");
         }
-        User user = userRepository.findById(userId).orElseThrow(() -> new UserNotFoundByIdException(userId));
-        Client client = clientRepository.findByIdAndUser_Id(dto.clientId(), userId)
+
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new UserNotFoundByIdException(userId));
+
+        Client client = clientRepository.findByIdAndUserId(dto.clientId(), userId)
                 .orElseThrow(() -> new ClientNotFoundException(dto.clientId()));
 
         Invoice invoice = invoiceMapper.toEntity(dto);
@@ -95,22 +100,27 @@ public class InvoiceService {
     public InvoiceResponse updateInvoice(String reference, UUID userId, InvoicePatchRequest dto) {
         Invoice invoice = findInvoice(userId, reference);
         invoiceMapper.updatePatching(dto, invoice);
+
         if (dto.clientId() != null) {
-            Client client = clientRepository.findByIdAndUser_Id(dto.clientId(), userId)
+            Client client = clientRepository.findByIdAndUserId(dto.clientId(), userId)
                     .orElseThrow(() -> new ClientNotFoundException(dto.clientId()));
             invoice.setClient(client);
         }
+
         if (invoice.getDueDate().isBefore(invoice.getIssueDate())) {
             throw new IllegalArgumentException("Due date must be on or after issue date.");
         }
+
         Invoice savedInvoice = invoiceRepository.save(invoice);
         return invoiceMapper.toResponseDTO(savedInvoice);
     }
 
     @Transactional
     public void deleteInvoice(UUID userId, String reference) {
+
         Invoice invoice = findInvoice(userId, reference);
         invoiceRepository.delete(invoice);
+
     }
 
     public Invoice findInvoice(UUID userId, String reference) {

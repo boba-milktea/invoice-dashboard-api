@@ -30,9 +30,13 @@ public class UserPrincipal implements UserDetails {
     }
 
     @Override
-    @NullMarked
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return List.of(new SimpleGrantedAuthority("ROLE_" + user.getRole().name()));
+    }
+
+    public boolean hasRole(String role) {
+        return getAuthorities().stream().anyMatch(auth
+                -> auth.getAuthority().equals("ROLE_" + role.toUpperCase()));
     }
 
     @Override
