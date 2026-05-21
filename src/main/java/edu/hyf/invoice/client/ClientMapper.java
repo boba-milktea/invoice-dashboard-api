@@ -4,10 +4,6 @@ import edu.hyf.invoice.client.dto.ClientPatchRequest;
 import edu.hyf.invoice.client.dto.ClientRequest;
 import edu.hyf.invoice.client.dto.ClientResponse;
 import org.mapstruct.*;
-import tools.jackson.databind.exc.IgnoredPropertyException;
-
-import java.lang.annotation.Target;
-
 
 @Mapper(componentModel = MappingConstants.ComponentModel.SPRING)
 

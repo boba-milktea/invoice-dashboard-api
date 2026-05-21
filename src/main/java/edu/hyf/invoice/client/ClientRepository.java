@@ -1,7 +1,8 @@
 package edu.hyf.invoice.client;
 
-import jakarta.validation.constraints.NotNull;
 import lombok.NonNull;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -14,17 +15,20 @@ import java.util.UUID;
 @Repository
 
 public interface ClientRepository extends JpaRepository<@NonNull Client, @NonNull UUID> {
+    Page<@NonNull Client> findByUserId(UUID uuid, Pageable pageable);
 
     @Query("""
-            select c.name, c.id from Client c
+            select c from Client c
             join c.user u
-            where upper(u.name) like upper(concat ('%', :name, '%'))
+            where c.user.id = :userId
+            and upper(c.name) like upper(concat ('%', :name, '%'))
             """)
 
-    List<Client> findByUsername(@Param("name") String name);
-    Optional<Client> findClientById(UUID id);
 
-    Optional<Client> findByIdAndUser_Id(UUID id, UUID userId);
+    List<Client> findByNameAndUserId(@Param("name") String name, @Param("userId") UUID userId);
+
+    Optional<Client> findByIdAndUserId(UUID id, UUID userid);
+
 
     boolean existsByEmail(String email);
 }
