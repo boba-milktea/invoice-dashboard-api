@@ -21,5 +21,6 @@ public record InvoiceRequest (@NotBlank(message = "Invoice reference is required
                               @NotNull(message = "Status is required.")
                               Status status,
                               @NotNull(message = "Client id is required.")
-                              UUID clientId
+                              UUID clientId,
+                              UUID ownerUserId
 ) {}

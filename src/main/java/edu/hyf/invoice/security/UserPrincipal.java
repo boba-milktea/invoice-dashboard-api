@@ -1,5 +1,6 @@
 package edu.hyf.invoice.security;
 
+import edu.hyf.invoice.user.Role;
 import edu.hyf.invoice.user.User;
 import lombok.RequiredArgsConstructor;
 import org.jspecify.annotations.NullMarked;
@@ -38,6 +39,11 @@ public class UserPrincipal implements UserDetails {
         return getAuthorities().stream().anyMatch(auth
                 -> auth.getAuthority().equals("ROLE_" + role.toUpperCase()));
     }
+
+    public boolean isSuperAdmin() {
+        return user.getRole() == Role.SUPER_ADMIN;
+    }
+
 
     @Override
     public String getPassword() {

@@ -31,6 +31,23 @@ public interface UserMapper {
     @Mapping(target = "role", ignore = true)
     void updateUser(UserPatchRequest dto, @MappingTarget User user);
 
+    default void updateUserRole(UserRolePatchRequest request, User user) {
+
+        if (request.role() == null ) throw new IllegalArgumentException("Empty role is not allowed");
+
+        if (request.role() == Role.SUPER_ADMIN) throw new IllegalArgumentException("SUPER_ADMIN role cannot be assigned");
+
+        if (request.role() != Role.USER && request.role() != Role.ADMIN) throw new IllegalArgumentException("Invalid User Role");
+
+        if (request.role() == Role.ADMIN) {
+            user.setRole(Role.ADMIN);
+        } else {
+            user.setRole(Role.USER);
+        }
+
+    }
+
+    /*
     @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "name", ignore = true)
@@ -41,6 +58,7 @@ public interface UserMapper {
     @Mapping(target = "createdAt", ignore = true)
     @Mapping(target = "updatedAt", ignore = true)
     void updateUserRole(UserRolePatchRequest dto, @MappingTarget User user);
+     */
 
 
 }

@@ -22,4 +22,6 @@ public class ClientRequest {
     @Size(min = 5, max = 255)
     @Pattern(regexp = "^[a-zA-Z0-9\\s,.-]+$", message = "Address contains invalid characters.")
     private String address;
+
+    private UUID ownerUserId;
 }
