@@ -28,24 +28,32 @@ REST backend for managing **users**, **clients**, and **invoices** with line ite
 
 ### Users
 
-- `GET /api/v1/users/me`, `PATCH /api/v1/users/me` — current user profile.
-- `GET /api/v1/users`, `GET /api/v1/users/{id}`, `PATCH /api/v1/users/{id}`, `PATCH /api/v1/users/{id}/role`, `DELETE /api/v1/users/{id}` — user administration.
+- `GET /api/v1/users/me`, `PATCH /api/v1/users/me` — current user profile (any authenticated role).
+- `GET /api/v1/users`, `GET /api/v1/users/{id}`, `PATCH /api/v1/users/{id}`, `PATCH /api/v1/users/{id}/role`, `DELETE /api/v1/users/{id}` — **super admin only** (`ROLE_SUPER_ADMIN`).
 
-**Note:** `@PreAuthorize("hasRole('ADMIN')")` on admin-style user routes is **commented out** in code. The **HTTP security rules** still require a valid JWT for these paths; fine-grained admin-only enforcement on user endpoints is the intended next step once those annotations are enabled.
+**Role management (`PATCH /api/v1/users/{id}/role`):**
+
+- Only a **super admin** may change roles.
+- Allowed targets: `USER` ↔ `ADMIN` only (`SUPER_ADMIN` cannot be assigned via the API).
+- A super admin cannot change their own role or demote another super admin.
 
 ### Clients
 
-- Full CRUD under `/api/v1/clients`.
-- `GET /api/v1/clients/search?name=...` — filter clients by associated username.
-- Creating a client accepts a `userId` in the body so the record is linked to the owning user.
+- Full CRUD under `/api/v1/clients` (**admin** and **super admin**).
+- `GET /api/v1/clients/search?name=...` — search clients by name.
+- **Admin:** all operations are scoped to the authenticated user’s own clients.
+- **Super admin:** can list, search, and CRUD **all** clients across users.
+- **Create (`POST`):** optional `ownerUserId` in the body — required for super admin (which admin owns the client); ignored for admin (client is always owned by the caller).
 
 ### Invoices
 
-- `GET /api/v1/invoices` — paginated list for the authenticated user (default: 10 per page, sorted by `createdAt` descending).
-- `GET /api/v1/invoices/due` — invoices due attention (`OVERDUE`, `PENDING`).
+- `GET /api/v1/invoices` — paginated list (default: 10 per page, sorted by `createdAt` descending). Admins see their own; super admins see all.
+- `GET /api/v1/invoices/due` — invoices needing attention (`OVERDUE`, `PENDING`).
 - `GET /api/v1/invoices/search/by-amount?min=&max=` — filter by total amount range.
-- `GET /api/v1/invoices/{reference}`, `POST`, `PATCH`, `DELETE` — manage invoices by **reference** (per-user uniqueness).
+- `GET /api/v1/invoices/{reference}`, `POST`, `PATCH`, `DELETE` — manage invoices by **reference** (unique per owning user).
 - Line items: `POST /api/v1/invoices/{reference}/items`, `PATCH .../items/{itemId}`, `DELETE .../items/{itemId}`.
+- **Create (`POST`):** optional `ownerUserId` — same rules as clients; `clientId` must belong to that owner.
+- **Patch:** when changing `clientId`, the new client must belong to the **invoice owner** (not necessarily the caller).
 
 **Business rules:**
 
@@ -62,16 +70,51 @@ REST backend for managing **users**, **clients**, and **invoices** with line ite
 
 ## Security model
 
-Rules are defined in `SecurityConfig`:
+### Roles
+
+| Role | Description |
+|------|-------------|
+| `USER` | Default at registration. Profile (`/users/me`) only; no client or invoice APIs. |
+| `ADMIN` | Manages **own** clients and invoices only. |
+| `SUPER_ADMIN` | Platform operator: all clients/invoices; user list and role promotion (`USER` → `ADMIN`). |
+
+`SUPER_ADMIN` is **not** assignable via register or `PATCH .../role` — bootstrap one account in the database (see below).
+
+### HTTP rules (`SecurityConfig`)
 
 | Area | Access |
 |------|--------|
 | `/api/v1/auth/**` | Public (no JWT) |
-| `/swagger-ui/**`, `/v3/api-docs/**`, `/swagger-ui.html` | Public (useful when OpenAPI is enabled) |
-| `/api/v1/clients/**`, `/api/v1/invoices/**` | **`ROLE_ADMIN` only** |
-| All other routes (e.g. `/api/v1/users/**`) | Any **authenticated** user (valid JWT) |
+| `/swagger-ui/**`, `/v3/api-docs/**`, `/error` | Public (useful when OpenAPI is enabled) |
+| `GET` / `PATCH` `/api/v1/users/me` | Any **authenticated** user |
+| `GET` / `PATCH` / `DELETE` `/api/v1/users/**` (except `/me`) | **`ROLE_SUPER_ADMIN`** |
+| `PATCH` `/api/v1/users/{id}/role` | **`ROLE_SUPER_ADMIN`** |
+| `/api/v1/clients/**`, `/api/v1/invoices/**` | **`ROLE_ADMIN`** or **`ROLE_SUPER_ADMIN`** |
+| All other routes | **Authenticated** (valid JWT) |
 
-Registration assigns **`Role.USER`** by default. To call **client** or **invoice** APIs you need an account with **`ROLE_ADMIN`** (for example, promote a user via `PATCH /api/v1/users/{id}/role` while authenticated, or set the role directly in the database for local development).
+`UserController` also uses `@PreAuthorize` (method security is enabled via `@EnableMethodSecurity`) as a second layer on user endpoints.
+
+Service-layer checks further scope data: admins use `userPrincipal.getId()`; super admins use global queries and `ownerUserId` on create (see `AccessHelper`).
+
+### Bootstrap a super admin (local dev)
+
+Registration always creates **`USER`**. Promote to admin via super admin, or set roles in SQL.
+
+If the database was created when the entity was still `Person`, PostgreSQL may still enforce `person_role_check` with only `USER` and `ADMIN`. Hibernate `ddl-auto=update` does not widen that check when `SUPER_ADMIN` is added to the Java enum. Run this once before promoting a user:
+
+```sql
+ALTER TABLE users DROP CONSTRAINT IF EXISTS person_role_check;
+ALTER TABLE users ADD CONSTRAINT users_role_check
+  CHECK (role IN ('SUPER_ADMIN', 'ADMIN', 'USER'));
+```
+
+Then promote:
+
+```sql
+UPDATE users SET role = 'SUPER_ADMIN' WHERE email = 'your-admin@example.com';
+```
+
+Re-login so the JWT carries the updated role.
 
 ---
 
@@ -89,7 +132,7 @@ Registration assigns **`Role.USER`** by default. To call **client** or **invoice
 ### Enums
 
 - **Invoice `Status`:** `DRAFT`, `PENDING`, `PAID`, `OVERDUE`, `CANCELLED`
-- **User `Role`:** `ADMIN`, `USER`
+- **User `Role`:** `SUPER_ADMIN`, `ADMIN`, `USER`
 
 ### ER diagram
 
@@ -163,7 +206,9 @@ src/main/java/edu/hyf/invoice/
 ├── client/                          # Client CRUD, mapper, repository
 ├── invoice/                         # Invoice + InvoiceItem, services, Status
 ├── security/                        # JWT filter, JwtService, UserPrincipal, user details
-└── common/exception/                # Domain exceptions, GlobalExceptionHandler
+└── common/
+    ├── exception/                   # Domain exceptions, GlobalExceptionHandler
+    └── utils/AccessHelper.java      # Resolves owner user id (admin vs super admin)
 
 src/main/resources/
 └── application.properties           # Datasource, JPA, server, springdoc flags

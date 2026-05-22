@@ -37,7 +37,7 @@ public class InvoiceController {
     private final InvoiceItemService invoiceItemService;
 
     @GetMapping
-    public ResponseEntity<@NonNull Page<@NonNull InvoiceResponse>> getMyInvoices(
+    public ResponseEntity<@NonNull Page<@NonNull InvoiceResponse>> getAllInvoices(
             @AuthenticationPrincipal UserPrincipal userPrincipal,
             @ParameterObject
             @PageableDefault(
@@ -46,13 +46,13 @@ public class InvoiceController {
                     direction = Sort.Direction.DESC
             )
             Pageable pageable) {
-        return ResponseEntity.ok(invoiceService.findMyInvoices(userPrincipal.getId(), pageable));
+        return ResponseEntity.ok(invoiceService.findAllInvoices(userPrincipal, pageable));
     }
 
     @GetMapping("/due")
     public ResponseEntity<List<InvoiceResponse>> getDueInvoice(
             @AuthenticationPrincipal UserPrincipal userPrincipal) {
-        return ResponseEntity.ok(invoiceService.getDueInvoice(userPrincipal.getId()));
+        return ResponseEntity.ok(invoiceService.getDueInvoice(userPrincipal));
     }
 
     @GetMapping("/search/by-amount")
@@ -60,21 +60,21 @@ public class InvoiceController {
             @AuthenticationPrincipal UserPrincipal userPrincipal,
             @RequestParam BigDecimal min,
             @RequestParam BigDecimal max) {
-        return ResponseEntity.ok(invoiceService.findInvoicesWithMinMax(userPrincipal.getId(), min, max));
+        return ResponseEntity.ok(invoiceService.findInvoicesWithMinMax(userPrincipal, min, max));
     }
 
     @GetMapping("/{reference}")
     public ResponseEntity<@NonNull InvoiceResponse> getInvoice(
             @PathVariable String reference,
             @AuthenticationPrincipal UserPrincipal userPrincipal) {
-        return ResponseEntity.ok(invoiceService.findInvoiceByReference(reference, userPrincipal.getId()));
+        return ResponseEntity.ok(invoiceService.findInvoiceByReference(reference, userPrincipal));
     }
 
     @PostMapping
     public ResponseEntity<InvoiceResponse> createInvoice(
             @AuthenticationPrincipal UserPrincipal userPrincipal,
             @Valid @RequestBody InvoiceRequest request) {
-        InvoiceResponse created = invoiceService.saveInvoice(userPrincipal.getId(), request);
+        InvoiceResponse created = invoiceService.saveInvoice(userPrincipal, request);
         return ResponseEntity.status(HttpStatus.CREATED).body(created);
     }
 
@@ -83,14 +83,14 @@ public class InvoiceController {
             @PathVariable String reference,
             @AuthenticationPrincipal UserPrincipal userPrincipal,
             @Valid @RequestBody InvoicePatchRequest request) {
-        return ResponseEntity.ok(invoiceService.updateInvoice(reference, userPrincipal.getId(), request));
+        return ResponseEntity.ok(invoiceService.updateInvoice(reference, userPrincipal, request));
     }
 
     @DeleteMapping("/{reference}")
     public ResponseEntity<Void> deleteInvoice(
             @PathVariable String reference,
             @AuthenticationPrincipal UserPrincipal userPrincipal) {
-        invoiceService.deleteInvoice(userPrincipal.getId(), reference);
+        invoiceService.deleteInvoice(userPrincipal, reference);
         return ResponseEntity.noContent().build();
     }
 
@@ -99,7 +99,7 @@ public class InvoiceController {
             @PathVariable String reference,
             @AuthenticationPrincipal UserPrincipal userPrincipal,
             @Valid @RequestBody InvoiceItemRequest request) {
-        InvoiceResponse updated = invoiceItemService.addItem(reference, userPrincipal.getId(), request);
+        InvoiceResponse updated = invoiceItemService.addItem(reference, userPrincipal, request);
         return ResponseEntity.status(HttpStatus.CREATED).body(updated);
     }
 
@@ -109,7 +109,7 @@ public class InvoiceController {
             @PathVariable Long itemId,
             @AuthenticationPrincipal UserPrincipal userPrincipal,
             @Valid @RequestBody InvoiceItemPatchRequest request) {
-        return ResponseEntity.ok(invoiceItemService.updateItem(reference, itemId, userPrincipal.getId(), request));
+        return ResponseEntity.ok(invoiceItemService.updateItem(reference, itemId, userPrincipal, request));
     }
 
     @DeleteMapping("/{reference}/items/{itemId}")
@@ -117,7 +117,7 @@ public class InvoiceController {
             @PathVariable String reference,
             @PathVariable Long itemId,
             @AuthenticationPrincipal UserPrincipal userPrincipal) {
-        invoiceItemService.deleteItem(reference, itemId, userPrincipal.getId());
+        invoiceItemService.deleteItem(reference, itemId, userPrincipal);
         return ResponseEntity.noContent().build();
     }
 

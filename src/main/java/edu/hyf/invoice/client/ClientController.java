@@ -41,37 +41,37 @@ public class ClientController {
                                                                               sort = "createdAt",
                                                                               direction = Sort.Direction.DESC
                                                                       )Pageable pageable) {
-       return ResponseEntity.ok(clientService.findAllClients(userPrincipal.getId(),pageable));
+       return ResponseEntity.ok(clientService.findAllClients(userPrincipal,pageable));
    }
 
    @GetMapping("/search")
    @Operation(summary = "Get clients by an username")
     public ResponseEntity<@NonNull List<ClientResponse>> getClientsByName(@RequestParam String name, @AuthenticationPrincipal UserPrincipal userPrincipal ) {
-       return ResponseEntity.ok(clientService.findClientsByName(name, userPrincipal.getId()));
+       return ResponseEntity.ok(clientService.findClientsByName(name, userPrincipal));
    }
 
    @GetMapping("/{id}")
    @Operation(summary = "Get a client by UUID")
     public ResponseEntity<@NonNull ClientResponse> getClientById(@PathVariable UUID id, @AuthenticationPrincipal UserPrincipal userPrincipal) {
-       return ResponseEntity.ok(clientService.findClientById(id, userPrincipal.getId()));
+       return ResponseEntity.ok(clientService.findClientById(id, userPrincipal));
    }
 
    @PostMapping
    @Operation(summary = "Add a client")
     public ResponseEntity<@NonNull ClientResponse> createClient(@Valid @RequestBody ClientRequest dto, @AuthenticationPrincipal UserPrincipal userPrincipal) {
-       return ResponseEntity.status(HttpStatus.CREATED).body(clientService.saveClient(dto, userPrincipal.getId()));
+       return ResponseEntity.status(HttpStatus.CREATED).body(clientService.saveClient(dto, userPrincipal));
    }
 
    @PatchMapping("/{id}")
    @Operation(summary = "Update information in a client")
    public ResponseEntity<@NonNull ClientResponse> updateClient(@PathVariable UUID id, @Valid @RequestBody ClientPatchRequest dto, @AuthenticationPrincipal UserPrincipal userPrincipal) {
-        return ResponseEntity.ok(clientService.updateClientById(id, dto, userPrincipal.getId()));
+        return ResponseEntity.ok(clientService.updateClientById(id, dto, userPrincipal));
    }
 
    @DeleteMapping("/{id}")
    @Operation(summary = "Delete client by id")
     public ResponseEntity<@NonNull Void> deleteClient(@PathVariable UUID id, @AuthenticationPrincipal UserPrincipal userPrincipal) {
-       clientService.deleteClient(id, userPrincipal.getId());
+       clientService.deleteClient(id, userPrincipal);
        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
    }
 

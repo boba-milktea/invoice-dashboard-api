@@ -5,6 +5,8 @@ import edu.hyf.invoice.security.JwtAuthFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -15,6 +17,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 
 @Configuration
 @EnableWebSecurity
+@EnableMethodSecurity
 @RequiredArgsConstructor
 
 public class SecurityConfig {
@@ -25,21 +28,15 @@ public class SecurityConfig {
     LoggingFilter loggingFilter () {
         return new LoggingFilter();
     }
-
-
-
+    
     @Bean
     public PasswordEncoder bCryptPasswordEncoder() {
         return new BCryptPasswordEncoder();
     }
 
-    // To decide which route to protect, which role has the access
-    // 1.csrf
-    // 2.session management
-    // 3.authorizeHttpRequest
-
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+
         http.csrf(csrf -> csrf.disable())
                 .sessionManagement(s -> s.sessionCreationPolicy((SessionCreationPolicy.STATELESS))) // disable session
                 .authorizeHttpRequests(auth -> auth
@@ -50,15 +47,24 @@ public class SecurityConfig {
                                 "/error"
                         ).permitAll()
 
+                        .requestMatchers(HttpMethod.GET, "/api/v1/users/me").authenticated()
+                        .requestMatchers(HttpMethod.PATCH, "/api/v1/users/me").authenticated()
+
+                        .requestMatchers(HttpMethod.GET,"/api/v1/users/**").hasRole("SUPER_ADMIN")
+                        .requestMatchers(HttpMethod.PATCH,"/api/v1/users/**").hasRole("SUPER_ADMIN")
+                        .requestMatchers(HttpMethod.DELETE,"/api/v1/users/**").hasRole("SUPER_ADMIN")
+
+                        .requestMatchers(HttpMethod.PATCH, "/api/v1/users/*/role").hasRole("SUPER_ADMIN")
+
                         .requestMatchers(
                                 "/api/v1/clients/**",
                                 "/api/v1/invoices/**"
-                        ).hasRole("ADMIN")
-
+                        ).hasAnyRole("ADMIN", "SUPER_ADMIN")
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
                 .addFilterBefore(new LoggingFilter(), JwtAuthFilter.class);
+        
         return http.build();
     }
 

@@ -6,12 +6,13 @@ import edu.hyf.invoice.common.exception.ClientNotFoundException;
 import edu.hyf.invoice.common.exception.InvoiceAlreadyExistsException;
 import edu.hyf.invoice.common.exception.InvoiceNotFoundException;
 import edu.hyf.invoice.common.exception.UserNotFoundByIdException;
+import edu.hyf.invoice.common.utils.AccessHelper;
 import edu.hyf.invoice.invoice.dto.InvoicePatchRequest;
 import edu.hyf.invoice.invoice.dto.InvoiceRequest;
 import edu.hyf.invoice.invoice.dto.InvoiceResponse;
+import edu.hyf.invoice.security.UserPrincipal;
 import edu.hyf.invoice.user.User;
 import edu.hyf.invoice.user.UserRepository;
-import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -28,6 +29,7 @@ import java.util.UUID;
 
 // TODO Constratint - One invoice should have at least one item. Empty invoice is not allowed.
 
+
 public class InvoiceService {
 
     private static final BigDecimal VAT_RATE = new BigDecimal("0.21");
@@ -36,42 +38,55 @@ public class InvoiceService {
     private final InvoiceMapper invoiceMapper;
     private final UserRepository userRepository;
     private final ClientRepository clientRepository;
+    private final AccessHelper accessHelper;
 
-    public List<InvoiceResponse> findAllInvoices() {
-        return invoiceRepository.findAll()
-                .stream()
-                .map(invoiceMapper::toResponseDTO)
-                .toList();
+
+    public Page<InvoiceResponse> findAllInvoices(UserPrincipal userPrincipal, Pageable pageable) {
+
+        if (userPrincipal.isSuperAdmin()) {
+            return invoiceRepository.findAll(pageable).map(invoiceMapper::toResponseDTO);
+        }
+        return invoiceRepository.findByUserId(userPrincipal.getId(), pageable).map(invoiceMapper::toResponseDTO);
     }
 
-    public InvoiceResponse findInvoiceByReference(String ref, UUID userId) {
-        return invoiceMapper.toResponseDTO(invoiceRepository.findByReferenceAndUserId(ref, userId).orElseThrow(()
-                -> new InvoiceNotFoundException(ref)));
+    public InvoiceResponse findInvoiceByReference(String ref, UserPrincipal userPrincipal) {
+        Invoice invoice;
+        if (userPrincipal.isSuperAdmin()) {
+            invoice = invoiceRepository.findByReference(ref).orElseThrow(()
+                    -> new InvoiceNotFoundException(ref));
+        } else {
+            invoice = invoiceRepository.findByReferenceAndUserId(ref, userPrincipal.getId()).orElseThrow(()
+                    -> new InvoiceNotFoundException(ref));
+        }
+        return invoiceMapper.toResponseDTO(invoice);
     }
 
-    public Page<@NonNull InvoiceResponse> findMyInvoices(UUID userId, Pageable pageable) {
-        return invoiceRepository.findByUserId(userId, pageable)
-                .map(invoiceMapper::toResponseDTO);
+
+    public List<InvoiceResponse> getDueInvoice(UserPrincipal userPrincipal) {
+
+        if (userPrincipal.isSuperAdmin()) {
+            return toResponse(invoiceRepository.getDueInvoice(List.of(Status.OVERDUE, Status.PENDING)));
+        } else {
+            return toResponse(invoiceRepository.getDueInvoiceById(userPrincipal.getId(), List.of(Status.OVERDUE, Status.PENDING)));
+        }
     }
 
-    public List<InvoiceResponse> getDueInvoice(UUID userId) {
-        return invoiceRepository.getDueInvoice(userId, List.of(Status.OVERDUE, Status.PENDING))
-                .stream()
-                .map(invoiceMapper::toResponseDTO)
-                .toList();
+    public List<InvoiceResponse> findInvoicesWithMinMax(UserPrincipal userPrincipal, BigDecimal min, BigDecimal max) {
+
+        if (userPrincipal.isSuperAdmin()) {
+            return toResponse(invoiceRepository.findInvoicesWithMinMax(min, max));
+        }
+        return toResponse(invoiceRepository.findInvoicesWithMinMaxById (userPrincipal.getId(), min, max));
     }
 
-    public List<InvoiceResponse> findInvoicesWithMinMax(UUID userId, BigDecimal min, BigDecimal max) {
-        return invoiceRepository.findInvoicesWithMinMax(userId, min, max)
-                .stream()
-                .map(invoiceMapper::toResponseDTO)
-                .toList();
-    }
 
     @Transactional
-    public InvoiceResponse saveInvoice(UUID userId, InvoiceRequest dto) {
+    public InvoiceResponse saveInvoice(UserPrincipal userPrincipal, InvoiceRequest dto) {
 
-        if (invoiceRepository.existsByReferenceAndUserId(dto.reference(), userId)) {
+        UUID ownerId = accessHelper.resolveOwnerUserId(userPrincipal, dto.ownerUserId());
+
+
+        if (invoiceRepository.existsByReferenceAndUserId(dto.reference(), ownerId)) {
             throw new InvoiceAlreadyExistsException(dto.reference());
         }
 
@@ -79,10 +94,10 @@ public class InvoiceService {
             throw new IllegalArgumentException("Due date must be on or after issue date.");
         }
 
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new UserNotFoundByIdException(userId));
+        User user = userRepository.findById(ownerId)
+                .orElseThrow(() -> new UserNotFoundByIdException(ownerId));
 
-        Client client = clientRepository.findByIdAndUserId(dto.clientId(), userId)
+        Client client = clientRepository.findByIdAndUserId(dto.clientId(), ownerId)
                 .orElseThrow(() -> new ClientNotFoundException(dto.clientId()));
 
         Invoice invoice = invoiceMapper.toEntity(dto);
@@ -96,14 +111,19 @@ public class InvoiceService {
         return invoiceMapper.toResponseDTO(savedInvoice);
     }
 
+
+
     @Transactional
-    public InvoiceResponse updateInvoice(String reference, UUID userId, InvoicePatchRequest dto) {
-        Invoice invoice = findInvoice(userId, reference);
+    public InvoiceResponse updateInvoice(String reference, UserPrincipal userPrincipal, InvoicePatchRequest dto) {
+
+        Invoice invoice = getInvoiceForPrincipal(reference, userPrincipal);
+
         invoiceMapper.updatePatching(dto, invoice);
 
         if (dto.clientId() != null) {
-            Client client = clientRepository.findByIdAndUserId(dto.clientId(), userId)
-                    .orElseThrow(() -> new ClientNotFoundException(dto.clientId()));
+            Client client = clientRepository.findByIdAndUserId(dto.clientId(), invoice.getUser().getId()).orElseThrow(()
+                    -> new ClientNotFoundException(dto.clientId()));
+
             invoice.setClient(client);
         }
 
@@ -111,21 +131,33 @@ public class InvoiceService {
             throw new IllegalArgumentException("Due date must be on or after issue date.");
         }
 
+
         Invoice savedInvoice = invoiceRepository.save(invoice);
+
         return invoiceMapper.toResponseDTO(savedInvoice);
     }
 
     @Transactional
-    public void deleteInvoice(UUID userId, String reference) {
+    public void deleteInvoice(UserPrincipal userPrincipal, String reference) {
 
-        Invoice invoice = findInvoice(userId, reference);
+        Invoice invoice = getInvoiceForPrincipal(reference, userPrincipal);
+
         invoiceRepository.delete(invoice);
 
     }
+    // Helper
+    public List<InvoiceResponse> toResponse(List<Invoice> invoices) {
+        return invoices.stream().map(invoiceMapper::toResponseDTO).toList();
+    }
 
-    public Invoice findInvoice(UUID userId, String reference) {
-        return invoiceRepository.findByReferenceAndUserId(reference, userId).orElseThrow(()
-                -> new InvoiceNotFoundException(reference));
+    public Invoice getInvoiceForPrincipal(String reference, UserPrincipal userPrincipal) {
+        if (userPrincipal.isSuperAdmin()) {
+            return invoiceRepository.findByReference(reference)
+                    .orElseThrow(() -> new InvoiceNotFoundException(reference));
+        } else {
+            return invoiceRepository.findByReferenceAndUserId(reference, userPrincipal.getId())
+                    .orElseThrow(() -> new InvoiceNotFoundException(reference));
+        }
     }
 
     public void recalculateInvoiceTotals(Invoice invoice) {

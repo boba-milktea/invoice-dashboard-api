@@ -3,10 +3,12 @@ package edu.hyf.invoice.user;
 import edu.hyf.invoice.auth.dto.RegisterRequestDTO;
 import edu.hyf.invoice.common.exception.EmailAlreadyExistsException;
 import edu.hyf.invoice.common.exception.UserNotFoundByIdException;
+import edu.hyf.invoice.security.UserPrincipal;
 import edu.hyf.invoice.user.dto.UserPatchRequest;
 import edu.hyf.invoice.user.dto.UserResponse;
 import edu.hyf.invoice.user.dto.UserRolePatchRequest;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -26,6 +28,7 @@ public class UserService {
 
     @Transactional
     public  UserResponse register(RegisterRequestDTO registerRequestDTO) {
+
         if (userRepository.existsByEmail(registerRequestDTO.getEmail())) {
             throw new EmailAlreadyExistsException(registerRequestDTO.getEmail());
         }
@@ -52,23 +55,47 @@ public class UserService {
 
     @Transactional
     public UserResponse updateUserById(UUID id, UserPatchRequest dto) {
+
         User user = userRepository.findById(id).orElseThrow(() -> new UserNotFoundByIdException(id));
+
         userMapper.updateUser(dto, user);
+
         User savedUser = userRepository.save(user);
+
         return userMapper.toResponseDTO(savedUser);
     }
 
     @Transactional
-    public UserResponse updateUserRole(UUID id, UserRolePatchRequest dto) {
+    public UserResponse updateUserRoleById(UUID id, UserRolePatchRequest dto, UserPrincipal userPrincipal) {
+
+        if (!userPrincipal.isSuperAdmin()) throw new AccessDeniedException("Access Denied.");
+
+        if (userPrincipal.isSuperAdmin() && userPrincipal.getId().equals(id))
+            throw new IllegalArgumentException("Changing self's role is not allowed.");
+
         User user = userRepository.findById(id).orElseThrow(() -> new UserNotFoundByIdException(id));
+
+        if (user.getRole().equals(Role.SUPER_ADMIN)) {
+            throw new IllegalArgumentException("Super Admin can't downgrade another Super Admin");
+        }
+
         userMapper.updateUserRole(dto, user);
-        return userMapper.toResponseDTO(user);
+
+        User savedUser = userRepository.save(user);
+
+        return userMapper.toResponseDTO(savedUser);
     }
 
     @Transactional
     public void deleteUserById(UUID id) {
+
         User user = userRepository.findById(id).orElseThrow(
                 () -> new UserNotFoundByIdException(id));
+
+        if (user.getRole().equals(Role.SUPER_ADMIN)) {
+            throw new IllegalArgumentException("Removing a Super Admin is not allowed.");
+        }
+
         userRepository.delete(user);
     }
 

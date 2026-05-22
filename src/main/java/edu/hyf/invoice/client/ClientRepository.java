@@ -1,5 +1,6 @@
 package edu.hyf.invoice.client;
 
+import edu.hyf.invoice.client.dto.ClientResponse;
 import lombok.NonNull;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -31,4 +32,8 @@ public interface ClientRepository extends JpaRepository<@NonNull Client, @NonNul
 
 
     boolean existsByEmail(String email);
+
+    List<Client> findByNameIgnoreCaseContaining(String name);
+
+
 }
