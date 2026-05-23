@@ -58,8 +58,10 @@ public class SecurityConfig {
 
                         .requestMatchers(
                                 "/api/v1/clients/**",
-                                "/api/v1/invoices/**"
+                                "/api/v1/invoices/**",
+                                "/api/v1/dashboard/**"
                         ).hasAnyRole("ADMIN", "SUPER_ADMIN")
+
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)

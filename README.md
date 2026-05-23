@@ -1,6 +1,6 @@
 # Invoice Dashboard API
 
-REST backend for managing **users**, **clients**, and **invoices** with line items, backed by PostgreSQL and secured with **JWT** authentication. Built as a portfolio-ready Spring Boot service.
+REST backend for managing **users**, **clients**, and **invoices** with line items, plus a **dashboard summary** for invoice metrics, backed by PostgreSQL and secured with **JWT** authentication. Built as a portfolio-ready Spring Boot service.
 
 **Repository:** [github.com/boba-milktea/invoice-dashboard-java](https://github.com/boba-milktea/invoice-dashboard-java)
 
@@ -61,6 +61,34 @@ REST backend for managing **users**, **clients**, and **invoices** with line ite
 - Due date must be on or after the issue date.
 - **Subtotal**, **tax**, and **total** are derived from line items; tax uses a **21%** VAT rate on the subtotal.
 
+### Dashboard
+
+- `GET /api/v1/dashboard/summary` — aggregated invoice metrics (**admin** and **super admin** only).
+- Optional query: `ownerUserId` (UUID) — **super admin only**; ignored for admin.
+
+**Response fields:**
+
+| Field | Description |
+|--------|-------------|
+| `totalRevenue` | Sum of `totalAmount` for **PAID** invoices in scope |
+| `unpaidAmount` | Sum of `totalAmount` for **PENDING** and **OVERDUE** invoices in scope |
+| `totalInvoicesCount` | Count of all invoices in scope (any status) |
+| `paidInvoicesCount` | Count with status `PAID` |
+| `pendingInvoicesCount` | Count with status `PENDING` |
+| `overdueInvoicesCount` | Count with status `OVERDUE` |
+
+**Scoping:**
+
+- **Admin:** metrics for the authenticated user’s own invoices only.
+- **Super admin** (no `ownerUserId`): platform-wide metrics across all users.
+- **Super admin** (`?ownerUserId={uuid}`): metrics for that admin’s invoices; returns **404** if the user does not exist.
+
+**Business rules:**
+
+- Revenue and unpaid totals use stored `totalAmount` (VAT-inclusive).
+- `DRAFT` and `CANCELLED` invoices are excluded from revenue and unpaid amount.
+- Status counts use the same scope as the amounts.
+
 ### Cross-cutting
 
 - Global exception handling for validation, conflicts, and common errors (`GlobalExceptionHandler`).
@@ -74,9 +102,9 @@ REST backend for managing **users**, **clients**, and **invoices** with line ite
 
 | Role | Description |
 |------|-------------|
-| `USER` | Default at registration. Profile (`/users/me`) only; no client or invoice APIs. |
-| `ADMIN` | Manages **own** clients and invoices only. |
-| `SUPER_ADMIN` | Platform operator: all clients/invoices; user list and role promotion (`USER` → `ADMIN`). |
+| `USER` | Default at registration. Profile (`/users/me`) only; no client, invoice, or dashboard APIs. |
+| `ADMIN` | Manages **own** clients, invoices, and dashboard summary. |
+| `SUPER_ADMIN` | Platform operator: all clients/invoices/dashboard; user list and role promotion (`USER` → `ADMIN`). |
 
 `SUPER_ADMIN` is **not** assignable via register or `PATCH .../role` — bootstrap one account in the database (see below).
 
@@ -89,12 +117,12 @@ REST backend for managing **users**, **clients**, and **invoices** with line ite
 | `GET` / `PATCH` `/api/v1/users/me` | Any **authenticated** user |
 | `GET` / `PATCH` / `DELETE` `/api/v1/users/**` (except `/me`) | **`ROLE_SUPER_ADMIN`** |
 | `PATCH` `/api/v1/users/{id}/role` | **`ROLE_SUPER_ADMIN`** |
-| `/api/v1/clients/**`, `/api/v1/invoices/**` | **`ROLE_ADMIN`** or **`ROLE_SUPER_ADMIN`** |
+| `/api/v1/clients/**`, `/api/v1/invoices/**`, `/api/v1/dashboard/**` | **`ROLE_ADMIN`** or **`ROLE_SUPER_ADMIN`** |
 | All other routes | **Authenticated** (valid JWT) |
 
 `UserController` also uses `@PreAuthorize` (method security is enabled via `@EnableMethodSecurity`) as a second layer on user endpoints.
 
-Service-layer checks further scope data: admins use `userPrincipal.getId()`; super admins use global queries and `ownerUserId` on create (see `AccessHelper`).
+Service-layer checks further scope data: admins use `userPrincipal.getId()`; super admins use global queries or optional `ownerUserId` (see `AccessHelper`).
 
 ### Bootstrap a super admin (local dev)
 
@@ -205,6 +233,7 @@ src/main/java/edu/hyf/invoice/
 ├── user/                            # User entity, Role, CRUD + /me
 ├── client/                          # Client CRUD, mapper, repository
 ├── invoice/                         # Invoice + InvoiceItem, services, Status
+├── dashboard/                     # Dashboard summary endpoint and aggregations
 ├── security/                        # JWT filter, JwtService, UserPrincipal, user details
 └── common/
     ├── exception/                   # Domain exceptions, GlobalExceptionHandler

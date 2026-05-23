@@ -5,10 +5,12 @@ import edu.hyf.invoice.user.dto.UserPatchRequest;
 import edu.hyf.invoice.user.dto.UserResponse;
 import edu.hyf.invoice.user.dto.UserRolePatchRequest;
 import org.mapstruct.*;
+import org.springframework.stereotype.Component;
 
 @Mapper(componentModel = MappingConstants.ComponentModel.SPRING)
+@Component
 
-//TODO remove mapstruct
+
 public interface UserMapper {
     UserResponse toResponseDTO (User user);
 
