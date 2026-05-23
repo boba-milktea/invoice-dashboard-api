@@ -4,9 +4,12 @@ import edu.hyf.invoice.invoice.dto.InvoicePatchRequest;
 import edu.hyf.invoice.invoice.dto.InvoiceRequest;
 import edu.hyf.invoice.invoice.dto.InvoiceResponse;
 import org.mapstruct.*;
+import org.springframework.stereotype.Component;
 
-
+@Component
 @Mapper(componentModel = MappingConstants.ComponentModel.SPRING, uses = InvoiceItemMapper.class)
+
+
 
 public interface InvoiceMapper {
     @Mapping(source = "client.id", target = "clientId")
@@ -27,6 +30,10 @@ public interface InvoiceMapper {
 
     @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
     @Mapping(target = "id", ignore = true)
+    @Mapping(target = "reference", ignore = true)
+    @Mapping(target = "subtotal", ignore = true)
+    @Mapping(target = "taxAmount", ignore = true)
+    @Mapping(target = "totalAmount", ignore = true)
     @Mapping(target = "invoiceItems", ignore = true)
     @Mapping(target = "user", ignore = true)
     @Mapping(target = "client", ignore = true)

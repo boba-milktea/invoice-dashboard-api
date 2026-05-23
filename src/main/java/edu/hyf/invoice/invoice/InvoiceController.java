@@ -28,9 +28,6 @@ import java.util.List;
 @RequiredArgsConstructor
 @Validated
 
-
-// TODO solve Serializing PageImpl, use Spring Data's PagedModel
-
 public class InvoiceController {
 
     private final InvoiceService invoiceService;

@@ -7,7 +7,6 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 
-// TODO still need to get the clientName
 
 public record InvoiceResponse(
         String reference,
@@ -21,7 +20,6 @@ public record InvoiceResponse(
 
         UUID userId,
         UUID clientId,
-        String clientName,
 
         List<InvoiceItemResponse> items
 ) {}

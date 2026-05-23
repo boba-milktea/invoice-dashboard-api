@@ -4,7 +4,9 @@ import edu.hyf.invoice.client.dto.ClientPatchRequest;
 import edu.hyf.invoice.client.dto.ClientRequest;
 import edu.hyf.invoice.client.dto.ClientResponse;
 import org.mapstruct.*;
+import org.springframework.stereotype.Component;
 
+@Component
 @Mapper(componentModel = MappingConstants.ComponentModel.SPRING)
 
 public interface ClientMapper {
