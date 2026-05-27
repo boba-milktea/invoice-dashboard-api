@@ -5,16 +5,8 @@ import edu.hyf.invoice.user.dto.UserPatchRequest;
 import edu.hyf.invoice.user.dto.UserResponse;
 import edu.hyf.invoice.user.dto.UserRolePatchRequest;
 import org.mapstruct.*;
-<<<<<<< HEAD
-import org.springframework.stereotype.Component;
 
 @Mapper(componentModel = MappingConstants.ComponentModel.SPRING)
-@Component
-=======
-
-@Mapper(componentModel = MappingConstants.ComponentModel.SPRING)
->>>>>>> 1c82202 (add invoice testing)
-
 
 public interface UserMapper {
     UserResponse toResponseDTO (User user);
@@ -53,22 +45,5 @@ public interface UserMapper {
         }
 
     }
-
-<<<<<<< HEAD
-    /*
-    @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
-    @Mapping(target = "id", ignore = true)
-    @Mapping(target = "name", ignore = true)
-    @Mapping(target = "email", ignore = true)
-    @Mapping(target = "clients", ignore = true)
-    @Mapping(target= "password", ignore = true)
-    @Mapping(target = "invoices", ignore = true)
-    @Mapping(target = "createdAt", ignore = true)
-    @Mapping(target = "updatedAt", ignore = true)
-    void updateUserRole(UserRolePatchRequest dto, @MappingTarget User user);
-     */
-
-=======
->>>>>>> 1c82202 (add invoice testing)
 
 }
