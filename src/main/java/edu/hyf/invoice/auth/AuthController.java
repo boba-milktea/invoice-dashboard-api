@@ -11,7 +11,10 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+<<<<<<< HEAD
 import org.springframework.security.core.Authentication;
+=======
+>>>>>>> 1c82202 (add invoice testing)
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -37,6 +40,7 @@ public class AuthController {
     public ResponseEntity<@NonNull AuthResponseDTO> login(@Valid @RequestBody LoginRequestDTO loginRequestDTO) {
         return ResponseEntity.ok(authService.login(loginRequestDTO));
     }
+<<<<<<< HEAD
 /*
     @PostMapping("/token")
 
@@ -88,3 +92,6 @@ auth/
    ├─ LoginRequest.java
    └─ AuthResponse.java
  */
+=======
+}
+>>>>>>> 1c82202 (add invoice testing)
