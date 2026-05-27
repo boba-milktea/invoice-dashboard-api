@@ -7,10 +7,6 @@ import edu.hyf.invoice.user.dto.UserRolePatchRequest;
 import jakarta.validation.Valid;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
-<<<<<<< HEAD
-import org.springframework.http.HttpStatus;
-=======
->>>>>>> 1c82202 (add invoice testing)
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -28,11 +24,7 @@ import java.util.UUID;
 public class UserController {
 
     private final UserService userService;
-<<<<<<< HEAD
-    private final UserMapper userMapper;
 
-=======
->>>>>>> 1c82202 (add invoice testing)
 
     @GetMapping("/me")
     @PreAuthorize("hasAnyRole('USER', 'ADMIN', 'SUPER_ADMIN')")

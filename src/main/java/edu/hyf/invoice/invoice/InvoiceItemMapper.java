@@ -4,13 +4,7 @@ import edu.hyf.invoice.invoice.dto.InvoiceItemPatchRequest;
 import edu.hyf.invoice.invoice.dto.InvoiceItemRequest;
 import edu.hyf.invoice.invoice.dto.InvoiceItemResponse;
 import org.mapstruct.*;
-<<<<<<< HEAD
-import org.springframework.stereotype.Component;
 
-@Component
-=======
-
->>>>>>> 1c82202 (add invoice testing)
 @Mapper(componentModel = MappingConstants.ComponentModel.SPRING)
 
 public interface InvoiceItemMapper {

@@ -44,10 +44,8 @@
         <jwt.version>0.12.6</jwt.version>
         <jwt.impl.version>0.12.6</jwt.impl.version>
         <jwt.jackson.vesion>0.12.6</jwt.jackson.vesion>
-<<<<<<< HEAD
-=======
         <mokito.core.version>5.14.2</mokito.core.version>
->>>>>>> 1c82202 (add invoice testing)
+
 	</properties>
 
 	<dependencies>
@@ -122,15 +120,12 @@
             <scope>test</scope>
         </dependency>
 
-<<<<<<< HEAD
-=======
         <dependency>
             <groupId>com.h2database</groupId>
             <artifactId>h2</artifactId>
             <scope>test</scope>
         </dependency>
 
->>>>>>> 1c82202 (add invoice testing)
 
         <!-- To test API endpoints (Swagger) -->
         <dependency>
@@ -160,9 +155,6 @@
             <scope>runtime</scope>
         </dependency>
 
-<<<<<<< HEAD
-=======
-
         <dependency>
             <groupId>org.mockito</groupId>
             <artifactId>mockito-core</artifactId>
@@ -170,7 +162,6 @@
             <scope>test</scope>
         </dependency>
 
->>>>>>> 1c82202 (add invoice testing)
     </dependencies>
 
     <build>
@@ -190,8 +181,6 @@
                         <path>
                             <groupId>org.projectlombok</groupId>
                             <artifactId>lombok</artifactId>
-<<<<<<< HEAD
-=======
                             <version>${lombok.version}</version>
                         </path>
 
@@ -199,7 +188,6 @@
                             <groupId>org.projectlombok</groupId>
                             <artifactId>lombok-mapstruct-binding</artifactId>
                             <version>0.2.0</version>
->>>>>>> 1c82202 (add invoice testing)
                         </path>
 
                         <path>
@@ -209,8 +197,7 @@
                         </path>
                     </annotationProcessorPaths>
                 </configuration>
-<<<<<<< HEAD
-=======
+
                 <executions>
                     <execution>
                         <id>default-testCompile</id>
@@ -259,7 +246,6 @@
                 <configuration>
                     <argLine>-javaagent:${org.mockito:mockito-core:jar}</argLine>
                 </configuration>
->>>>>>> 1c82202 (add invoice testing)
             </plugin>
         </plugins>
     </build>

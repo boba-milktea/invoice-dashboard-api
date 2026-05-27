@@ -49,11 +49,6 @@ public class Client {
     @Pattern(regexp = "^[a-zA-Z0-9\\s,.-]+$", message = "Address contains invalid characters.")
     private String address;
 
-<<<<<<< HEAD
-    //TODO having authentication for clients as well
-
-=======
->>>>>>> 1c82202 (add invoice testing)
     // Client 1:N Invoice
     @OneToMany(mappedBy = "client", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     @JsonManagedReference

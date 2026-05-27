@@ -27,12 +27,6 @@ import java.util.UUID;
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
 
-<<<<<<< HEAD
-// TODO Constratint - One invoice should have at least one item. Empty invoice is not allowed.
-
-
-=======
->>>>>>> 1c82202 (add invoice testing)
 public class InvoiceService {
 
     private static final BigDecimal VAT_RATE = new BigDecimal("0.21");
