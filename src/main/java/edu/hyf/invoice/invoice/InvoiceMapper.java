@@ -4,6 +4,7 @@ import edu.hyf.invoice.invoice.dto.InvoicePatchRequest;
 import edu.hyf.invoice.invoice.dto.InvoiceRequest;
 import edu.hyf.invoice.invoice.dto.InvoiceResponse;
 import org.mapstruct.*;
+<<<<<<< HEAD
 import org.springframework.stereotype.Component;
 
 @Component
@@ -11,6 +12,12 @@ import org.springframework.stereotype.Component;
 
 
 
+=======
+
+@Mapper(componentModel = MappingConstants.ComponentModel.SPRING, uses = InvoiceItemMapper.class)
+
+
+>>>>>>> 1c82202 (add invoice testing)
 public interface InvoiceMapper {
     @Mapping(source = "client.id", target = "clientId")
     @Mapping(source = "user.id", target = "userId")

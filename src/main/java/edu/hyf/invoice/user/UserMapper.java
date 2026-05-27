@@ -5,10 +5,15 @@ import edu.hyf.invoice.user.dto.UserPatchRequest;
 import edu.hyf.invoice.user.dto.UserResponse;
 import edu.hyf.invoice.user.dto.UserRolePatchRequest;
 import org.mapstruct.*;
+<<<<<<< HEAD
 import org.springframework.stereotype.Component;
 
 @Mapper(componentModel = MappingConstants.ComponentModel.SPRING)
 @Component
+=======
+
+@Mapper(componentModel = MappingConstants.ComponentModel.SPRING)
+>>>>>>> 1c82202 (add invoice testing)
 
 
 public interface UserMapper {
@@ -49,6 +54,7 @@ public interface UserMapper {
 
     }
 
+<<<<<<< HEAD
     /*
     @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
     @Mapping(target = "id", ignore = true)
@@ -62,5 +68,7 @@ public interface UserMapper {
     void updateUserRole(UserRolePatchRequest dto, @MappingTarget User user);
      */
 
+=======
+>>>>>>> 1c82202 (add invoice testing)
 
 }
