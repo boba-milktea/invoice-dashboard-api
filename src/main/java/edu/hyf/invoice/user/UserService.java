@@ -75,16 +75,30 @@ public class UserService {
 
         User user = userRepository.findById(id).orElseThrow(() -> new UserNotFoundByIdException(id));
 
-        if (user.getRole().equals(Role.SUPER_ADMIN)) {
-            throw new IllegalArgumentException("Super Admin can't downgrade another Super Admin");
+        if (user.getRole() == Role.SUPER_ADMIN && dto.role() != Role.SUPER_ADMIN) {
+            throw new IllegalArgumentException("Cannot downgrade a Super Admin.");
         }
 
-        userMapper.updateUserRole(dto, user);
+        user.setRole(validateRole(dto.role()));
 
         User savedUser = userRepository.save(user);
 
         return userMapper.toResponseDTO(savedUser);
     }
+
+    private static Role validateRole(Role role) {
+        if (role== null)
+            throw new IllegalArgumentException("Empty role is not allowed");
+
+        if (role == Role.SUPER_ADMIN)
+            throw new IllegalArgumentException("SUPER_ADMIN role cannot be assigned");
+
+        if (role != Role.USER && role!= Role.ADMIN)
+            throw new IllegalArgumentException("Invalid User Role");
+
+        return role;
+    }
+
 
     @Transactional
     public void deleteUserById(UUID id) {
